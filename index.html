@@ -8647,25 +8647,42 @@
         <div class="stats-inline" id="matchCount">匹配文件数: 2128</div>
     </div>
 
+    <!-- 引入 Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
     <script>
+        // Firebase 配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyBjz1tYmob8V0s9OusZXotWz1rCe0pnSWo",
+            authDomain: "kaogu-project.firebaseapp.com",
+            databaseURL: "https://kaogu-project-default-rtdb.firebaseio.com",
+            projectId: "kaogu-project",
+            storageBucket: "kaogu-project.firebasestorage.app",
+            messagingSenderId: "849472592292",
+            appId: "1:849472592292:web:6d9dd8e1b5e93b75a10931"
+        };
+
+        // 初始化 Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
         // 获取访问次数元素
         const visitCount = document.getElementById('visitCount');
 
-        // 从 Netlify Functions 获取访问次数
-        function fetchVisitCount() {
-            fetch('/.netlify/functions/visit-count')
-                .then(response => response.json())
-                .then(data => {
-                    visitCount.textContent = data.visit_count;
-                })
-                .catch(error => {
-                    console.error('获取访问次数失败:', error);
-                    visitCount.textContent = '未知';
-                });
+        // 更新访问次数
+        function updateVisitCount() {
+            const visitRef = database.ref('visitCount');
+            visitRef.transaction((count) => {
+                return (count || 0) + 1;
+            });
+            visitRef.on('value', (snapshot) => {
+                visitCount.textContent = snapshot.val();
+            });
         }
 
-        // 页面加载时获取访问次数
-        fetchVisitCount();
+        // 页面加载时更新访问次数
+        updateVisitCount();
+
 
         // 获取输入框和文件列表
         const searchInput = document.getElementById('searchInput');
